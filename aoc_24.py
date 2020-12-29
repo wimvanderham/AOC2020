@@ -30,8 +30,7 @@ prevchar = ""
 # Functions
 def getNeighbours((x, y, z)):
     # Count the neighbours around the six positions next to an input position
-    # Returns the number of black and white neighbours
-    white = 0
+    # Returns the number of black neighbours
     black = 0
     for direction in delta.keys():
         (deltaX, deltaY, deltaZ) = delta[direction]
@@ -39,12 +38,7 @@ def getNeighbours((x, y, z)):
         if neighbour in tiles:
             if tiles[neighbour] == True:
                 black += 1
-            else:
-                white += 1
-        else:
-            # No neighbour stored, use original color white
-            white += 1
-    return black, white
+    return black
     
 # Test functions
 
@@ -134,7 +128,7 @@ for day in range(100):
     # Construct new situation
     new_tiles = {}
     for position in tiles.keys():
-        black, white = getNeighbours(position)
+        black = getNeighbours(position)
         if tiles[position] == True:
             # Tile is Black
             if black == 0 or black > 2:
