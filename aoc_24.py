@@ -25,14 +25,6 @@ delta = {"e": (+1,-1,0), "w": (-1,+1,0), "ne": (+1,0,-1), "sw": (-1,0,+1), "nw":
 # Initially all tiles are white (False)
 tiles = {}
 
-# Keep track of "extension" of the grid
-min_x = 0
-max_x = 0
-min_y = 0
-max_y = 0
-min_z = 0
-max_z = 0
-
 prevchar = ""
 
 # Functions
@@ -90,13 +82,6 @@ for line in input_file:
             #print "X:", X, "Y:", Y, "Z:", Z, "direction:", direction, "deltaX:", deltaX, "deltaY:", deltaY, "deltaZ:", deltaZ, "New pos:",
             
             startpos = (X + deltaX, Y + deltaY, Z + deltaZ)
-
-            min_x = min(min_x, X + deltaX)
-            max_x = max(max_x, X + deltaX)
-            min_y = min(min_y, Y + deltaY)
-            max_y = max(max_y, Y + deltaY)
-            min_z = min(min_z, Z + deltaZ)
-            max_z = max(max_z, Z + deltaZ)
             
             #print startpos
             #print (min_x, min_y, min_z), "-", (max_x, max_y, max_z)
@@ -133,44 +118,42 @@ print
 # Now play the game of life with the Hex grid
 for day in range(100):
     p2 = 0
+    for position in tiles.keys():
+        # Extend grid
+        if tiles[position] == True:
+            # For every Black tile, check the six neighbours
+            (x, y, z) = position
+            for direction in delta.keys():
+                (deltaX, deltaY, deltaZ) = delta[direction]
+                neighbour = (x + deltaX, y + deltaY, z + deltaZ)
+                if neighbour not in tiles:
+                    # If a neighbour is not available,
+                    # set it to the default color White
+                    # so it will be included in evaluation loop
+                    tiles[neighbour] = False
+    # Construct new situation
     new_tiles = {}
-    for x in range(min_x - 2, max_x + 2):
-        for y in range(min_y - 2, max_y + 2):
-            for z in range(min_z - 2, max_z + 2):
-                position = (x, y, z)
-                black, white = getNeighbours(position)
-                IsBlack = False
-                if position in tiles:
-                    IsBlack = tiles[position]
-                if IsBlack:
-                    # Tile is Black
-                    if black == 0 or black > 2:
-                        # Change to White
-                        new_tiles[position] = False
-                    else:
-                        new_tiles[position] = True
-                    min_x = min(min_x, x)
-                    max_x = max(max_x, x)
-                    min_y = min(min_y, y)
-                    max_y = max(max_y, y)
-                    min_z = min(min_z, z)
-                    max_z = max(max_z, z)
-                else:
-                    # Tile is White
-                    if black == 2:
-                        new_tiles[position] = True
-                        min_x = min(min_x, x)
-                        max_x = max(max_x, x)
-                        min_y = min(min_y, y)
-                        max_y = max(max_y, y)
-                        min_z = min(min_z, z)
-                        max_z = max(max_z, z)
+    for position in tiles.keys():
+        black, white = getNeighbours(position)
+        if tiles[position] == True:
+            # Tile is Black
+            if black == 0 or black > 2:
+                # Change to White
+                new_tiles[position] = False
+            else:
+                new_tiles[position] = True
+        else:
+            # Tile is White
+            if black == 2:
+                new_tiles[position] = True
+
+    tiles = new_tiles
+
     if (day % 10) == 0:
-        # Show some progress
+        # Show some progress every 10th day
         end = time.time()
         print "Day", day, end - start, "seconds"
         
-    tiles = new_tiles
 
 p2 = 0
 for startpos in tiles:
